@@ -24,9 +24,8 @@ class SmilesEmbedder:
         self.max_len = max_len
         self.device = device
 
-        self.model = torch.jit.load(model_path).eval()
-        if device is not None:
-            self.model.cuda(device)
+        map_location = torch.device('cuda', device) if device is not None else 'cpu'
+        self.model = torch.jit.load(model_path, map_location=map_location).eval()
 
     def pad_input_ids(self, input_ids: list[list[int]]) -> dict[str, torch.Tensor]:
         pad_id = self.tokenizer.vocab.get(self.tokenizer.pad_token)
@@ -52,5 +51,6 @@ class SmilesEmbedder:
         ragged_ids = self.tokenizer(smiles)
         batch = self.pad_input_ids(ragged_ids)
         with torch.inference_mode():
+            print(f"devices of input: {batch['input_ids'].device} {batch['input_ids'].device}")
             emb = self.model(batch['input_ids'], batch['attention_mask'])
         return emb.cpu().numpy().astype(np.float32)

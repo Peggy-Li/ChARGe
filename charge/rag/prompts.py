@@ -38,6 +38,42 @@ class ReactionDataPrompt:
         return f'{self.__class__.__name__}({sections_str})'
 
 
+class YieldDataPrompt(ReactionDataPrompt):
+    def __init__(self) -> None:
+        self.sections = dict()
+        self.sections['role'] = 'You are an expert chemist.'
+        self.sections['task'] = 'Yield prediction'
+        self.sections['instruction'] = ''.join([
+            "Given the input data in [INPUT DATA], perform your task and make several predictions (e.g., 3 to 5 different predictions), ",
+            "which must follow [OUTPUT FORMAT]."
+        ])
+        self.sections['instruction'] = ''.join([
+            "You are given a data table in [DATA TABLE]. In this table, each row/line consists of two columns: \n",
+            "(1) reaction data input,\n",
+            "(2) ground truth yield retrieved from a database.\n",
+            "In one line the ground truth output is missing as denoted by '???'. ",
+            "Make several predictions (e.g., 3 to 5 different predictions) for this missing value. ",
+            "Your predictions must follow [OUTPUT FORMAT]. ",
+            "Observe the pattern in the table as guidance for your predictions.",
+        ])
+        self.sections['output format'] = ''.join([
+            "Each prediction must be a JSON string on a newline, formatted as: ",
+            '{\"yield\": ...}',
+            ", ",
+            "where ... is the yield percentage as a scalar from 0 to 100.",
+        ])
+
+class YieldDataBinnedPrompt(YieldDataPrompt):
+    def __init__(self): #, bin_split: float=60) -> None:
+        super().__init__()
+        self.sections['output format'] = ''.join([
+            "Each prediction must be a JSON string on a newline, formatted as: ",
+            '{\"yield\": ...}',
+            ", ",
+            "where ... is either \"high\" or \"low\".",
+        ])
+
+
 class ReactionDataPrompt_ExpertOnly(ReactionDataPrompt):
     def __init__(self, forward: bool) -> None:
         super().__init__(forward=forward)
